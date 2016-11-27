@@ -32,6 +32,8 @@ tau_r_GABA = varargin{20}(3);
 tau_d_GABA = varargin{20}(4);
 tref = varargin{21};            % Refractory period
 rs = varargin{22};              % Refractory state of each neuron
+synaptic_strength_lb = varargin{23}(1);
+synaptic_strength_ub = varargin{23}(2);
 % ------------------------------------------------------------------------
 display_track_progress_single_neuron = 0;
 disable_warnings = 0;
@@ -206,7 +208,8 @@ while 1
         [SEE_matrix, SE1E2_track_increment] = update_SEE_matrix(...
             spike_timing_dependent_plasticity, ...
             SEE_matrix, idx, en, A, lft_prev, lft, ...
-            track_synaptic_strength);
+            track_synaptic_strength, ...
+            [synaptic_strength_lb synaptic_strength_ub]);
     end  
     
     % Record firing times in a raster column

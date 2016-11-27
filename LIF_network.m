@@ -16,7 +16,7 @@ percent = 1.00;         % Fraction of results from the end to show on plot
 
 track_raster = 1;
 track_sample_neurons = 0;
-track_synaptic_strength = 1;
+track_synaptic_strength = 0;
 
 external_spike_type = 'Poisson';    % 'Poisson' or 'Deterministic'
 
@@ -39,8 +39,10 @@ extI = 0;               % External input current
                         % 1x1 or 1xn
 
 % STDP parameters                        
-spike_timing_dependent_plasticity = 'off';      
-plot_subset_weight_distributions_at_every_progress_update = 1;
+spike_timing_dependent_plasticity = 'off';
+synaptic_strength_lb = 0.00;
+synaptic_strength_ub = 0.10;
+plot_subset_weight_distributions_at_every_progress_update = 0;
 subset_size = 1000;
 % ------------------------------------------------------------------------
 i = 5;
@@ -51,7 +53,11 @@ while i<=length(varargin),
         case 'extI'
             extI = varargin{i+1};
         case 'STDP'
-            spike_timing_dependent_plasticity = varargin{i+1};
+            spike_timing_dependent_plasticity = varargin{i+1}{1};
+            if length(varargin{i+1}) > 1
+                synaptic_strength_lb = varargin{i+1}{2}(1);
+                synaptic_strength_ub = varargin{i+1}{2}(2);
+            end
         case 'external_spike_type', external_spike_type = varargin{i+1};
         case 'external_spike_rate', external_spike_rate = varargin{i+1};
         case 'external_spike_strength', fS = varargin{i+1};
@@ -71,6 +77,8 @@ while i<=length(varargin),
         case 'track_raster',        track_raster = varargin{i+1};
         case 'track_sample_neurons'
             track_sample_neurons = varargin{i+1};
+        case 'track_synaptic_strength'
+            track_synaptic_strength = varargin{i+1};
         case 'display_input_output_summary'
             display_input_output_summary = varargin{i+1};
         case 'plot_results'
@@ -265,7 +273,7 @@ for i = 1:nr_time_steps
         track_synaptic_strength, ...
         [vE vI vL gL vThresh SEI SI], ...
         [tau_r_AMPA tau_d_AMPA tau_r_GABA tau_d_GABA], ...
-        tref, rs);
+        tref, rs, [synaptic_strength_lb synaptic_strength_ub]);
     % Evolve network conductances
     gen1 = gen1+genJump;
     hen = hen+henJump;
@@ -356,6 +364,11 @@ end
 % Synaptic strength
 if track_synaptic_strength
     SE1E2_track(SE1E2_track_count+1:end, :) = [];
+end
+
+% Record synaptic strengths of the existing EE synapses
+if strcmp(spike_timing_dependent_plasticity, 'on')
+    SEE_vector = SEE_matrix(logical(A(1:en, 1:en)));
 end
 
 avg_exc_v = mean(v1(1:en));
@@ -524,7 +537,6 @@ if plot_results
     
     % Plot synaptic strength histogram
     if strcmp(spike_timing_dependent_plasticity, 'on')
-        SEE_vector = SEE_matrix(logical(A(1:en, 1:en)));           
         figure,
         histogram(SEE_vector, 'normalization', 'probability');
         xlabel('Synaptic strength');
@@ -534,11 +546,18 @@ end
 %% Output arguments
 varargout{1} = v1;
 varargout{2} = A;
+
 if track_raster
-    varargout{3}(1) = tot_firing_rate;
-    varargout{3}(2) = exc_firing_rate;
-    varargout{3}(3) = inh_firing_rate;
-    varargout{4} = rast;
+    i = 3;
+    varargout{i}(1) = tot_firing_rate;
+    varargout{i}(2) = exc_firing_rate;
+    varargout{i}(3) = inh_firing_rate;
+    varargout{i+1} = rast;
+end
+
+if strcmp(spike_timing_dependent_plasticity, 'on')
+    i = 3;
+    varargout{i} = SEE_vector;
 end
 
 end

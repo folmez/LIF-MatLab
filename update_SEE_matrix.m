@@ -9,11 +9,10 @@ A = varargin{5};        % Adjacency matrix
 lft_prev = varargin{6};  % Last firing times of each neuron before t
 lft_next = varargin{7};  % Last firing times of each neuron before t+dt
 track_synaptic_strength = varargin{8};
+synaptic_strength_lb = varargin{9}(1);
+synaptic_strength_ub = varargin{9}(2);
 
 display_progress_for_two = track_synaptic_strength;
-strength_lb = 0;
-strength_ub = 0.25;
-
 SE1E2_track = [];
 
 %% Model
@@ -59,8 +58,8 @@ if strcmp(spike_timing_dependent_plasticity, 'on')
         end
        
         % Correct strength values that are out of bounds
-        SEE_matrix(SEE_matrix<strength_lb) = strength_lb;
-        SEE_matrix(SEE_matrix>strength_ub) = strength_ub;
+        SEE_matrix(SEE_matrix<synaptic_strength_lb) = synaptic_strength_lb;
+        SEE_matrix(SEE_matrix>synaptic_strength_ub) = synaptic_strength_ub;
                 
         % Track and display first two neurons
         if (id==1 && ismember(2, id_nbrs)) || ...

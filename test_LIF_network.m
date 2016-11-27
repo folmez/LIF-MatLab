@@ -4,7 +4,41 @@ if length(varargin)>1
     save_workspace = varargin{2};
 end
 
-if test_type_num == 4
+if test_type_num == 5
+    %% HEAT MAP OF SYNAPTIC STRENGTH DIST. W.R.T. TO THE UPPER BOUUND
+    % Input parameters
+    en = 400;
+    in = 0;
+    edge_prob = 1;
+    t_end = varargin{3}(1);
+    dt = varargin{3}(2);
+    synaptic_strength_ub_vec = varargin{4};
+    tref = varargin{5};
+    
+    nr_bins = 100;
+    poisson_rate = 2400;
+    n = en + (-1)*in;    
+    % Model
+    nr_ss_ub_vec = length(synaptic_strength_ub_vec);
+    SEE_vec = zeros(n*n-n, nr_ss_ub_vec);     % From 0 to upper bound
+    rel_SEE_vec = zeros(n*n-n, nr_ss_ub_vec); % From 0 to 1 (hence relative!)
+    rel_SEE_vec_hist = zeros(nr_bins, nr_ss_ub_vec);
+    for i = 1:nr_ss_ub_vec
+        [~, ~, SEE_vec(:,i)] = LIF_network(...
+            'ER', [en in], edge_prob, [t_end dt], ...
+            'external_spike_rate', poisson_rate, 'tref', tref, ...
+            'STDP', {'on', [0 synaptic_strength_ub_vec(i)]});
+        rel_SEE_vec(:,i) = SEE_vec(:,i)/synaptic_strength_ub_vec(i);
+        H = histogram(rel_SEE_vec(:,i), linspace(0, 1, nr_bins+1));
+        rel_SEE_vec_hist(:,i) = H.Values(end:-1:1)';
+    end
+    
+    % Crunch
+    colormap('hot');
+    imagesc(rel_SEE_vec_hist);
+    colorbar;
+    
+elseif test_type_num == 4
     %% HALF WITH EXTERNAL INPUTS, OTHER HALF WITHOUT
     %  but with time-dependent external input
     % David's message:
