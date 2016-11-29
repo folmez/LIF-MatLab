@@ -7,7 +7,7 @@ end
 if test_type_num == 5
     %% HEAT MAP OF SYNAPTIC STRENGTH DIST. W.R.T. TO THE UPPER BOUUND
     % Input parameters
-    en = 400;
+    en = 100;
     in = 0;
     edge_prob = 1;
     t_end = varargin{3}(1);
@@ -29,7 +29,7 @@ if test_type_num == 5
             'external_spike_rate', poisson_rate, 'tref', tref, ...
             'STDP', {'on', [0 synaptic_strength_ub_vec(i)]});
         rel_SEE_vec(:,i) = SEE_vec(:,i)/synaptic_strength_ub_vec(i);
-        H = histogram(rel_SEE_vec(:,i), linspace(0, 1, nr_bins+1));
+        H = histcounts(rel_SEE_vec(:,i), linspace(0, 1, nr_bins+1));
         rel_SEE_vec_hist(:,i) = H.Values(end:-1:1)';
     end
     

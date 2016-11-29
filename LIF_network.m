@@ -42,7 +42,7 @@ extI = 0;               % External input current
 spike_timing_dependent_plasticity = 'off';
 synaptic_strength_lb = 0.00;
 synaptic_strength_ub = 0.10;
-plot_subset_weight_distributions_at_every_progress_update = 0;
+plot_subset_weight_distributions_at_every_progress_update = 1;
 subset_size = 1000;
 % ------------------------------------------------------------------------
 i = 5;
@@ -328,8 +328,10 @@ for i = 1:nr_time_steps
                 num2str(length(SEE_vector)) ')'];
             end
             figure(h1),
-            histogram(SEE_vector, 'Normalization', 'probability', ...
+            histogram(SEE_vector, 'Normalization', 'countdensity', ...
                 'DisplayStyle', 'stairs');
+            xlabel('Synaptic strength');
+            ylabel('Count density');
             title(fig_tit);
             drawnow;
         end       
