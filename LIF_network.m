@@ -44,10 +44,12 @@ synaptic_strength_lb = 0.00;
 synaptic_strength_ub = 0.10;
 plot_subset_weight_distributions_at_every_progress_update = 1;
 subset_size = 1000;
-% ------------------------------------------------------------------------
+
 i = 5;
 while i<=length(varargin),
     switch varargin{i},
+        case 'extI_type'
+            extI_type = varargin{i+1};
         case 'extI_matrix'
             extI_matrix = varargin{i+1};
         case 'extI'
@@ -92,7 +94,7 @@ while i<=length(varargin),
     end
     i = i+2;
 end
-% ------------------------------------------------------------------------
+
 %% Generate network
 if in>0
     warning('Number of inhibitory neurons changed to a negative number!');
@@ -121,7 +123,6 @@ if ~isinteger(int8(nr_time_steps))
 end
 
 %% 
-
 % External input current vector or matrix representing the external input
 % current function
 if strcmp(extI_type, 'constant')
@@ -129,8 +130,13 @@ if strcmp(extI_type, 'constant')
 elseif strcmp(extI_type, 'time-dependent #1')
     % extI_matrix is an n-by-nr_time_steps matrix whose entries hold the
     % external input current to each neuron at any given time step.
+    %     extI_matrix = get_external_input_current(...
+    %         extI_type, extI, n, nr_time_steps);
+    Imin = 10;
+    Imax = 100;
+    nr_extI_steps = 4;
     extI_matrix = get_external_input_current(...
-        extI_type, extI, n, nr_time_steps);
+        extI_type, [en in], t_end, dt, [Imin Imax nr_extI_steps]);
 end
 
 % Synaptic strength matrix representing strength between exc. neurons
@@ -152,7 +158,7 @@ eori = [ones(en,1) ; (-1)*ones((-1)*in,1)];
 lpst = zeros(n,1);  % Last external Poisson spike time into each neuron
 gep1 = zeros(n,1);  % Poisson conductance at t_j+dt
 hep = zeros(n,1);   
-nr_rps = zeros(n,1);% # of received Poisson spikes
+nr_rps = zeros(n,1);% # ocodeblocks -std=c++11 or -std=gnu++11f received Poisson spikes
 
 gen1 = zeros(n,1);  % Excitatory network conductance at t_j+dt
 hen = zeros(n,1);
@@ -432,21 +438,21 @@ if display_input_output_summary
     fprintf('\tInhibitory firing rate: %4.3f per sec\n', inh_firing_rate);
     fprintf('\t     Total firing rate: %4.3f per sec\n', tot_firing_rate);
     fprintf('\n');
-    fprintf('\tAverage exc. potential: %1.3f\n', avg_exc_v);
-    fprintf('\tAverage inh. potential: %1.3f\n', avg_inh_v);
-    fprintf('\t     Average potential: %1.3f\n', avg_v);
+    fprintf('\tAverage exc. potential: %1.4f\n', avg_exc_v);
+    fprintf('\tAverage inh. potential: %1.4f\n', avg_inh_v);
+    fprintf('\t     Average potential: %1.4f\n', avg_v);
     fprintf('\n');
-    fprintf('\t      Average exc. gep: %2.3f\n', avg_exc_gep);
-    fprintf('\t      Average inh. gep: %2.3f\n', avg_inh_gep);
-    fprintf('\t           Average gep: %2.3f\n', avg_gep);
+    fprintf('\t      Average exc. gep: %2.4f\n', avg_exc_gep);
+    fprintf('\t      Average inh. gep: %2.4f\n', avg_inh_gep);
+    fprintf('\t           Average gep: %2.4f\n', avg_gep);
     fprintf('\n');
-    fprintf('\t      Average exc. gen: %2.3f\n', avg_exc_gen);
-    fprintf('\t      Average inh. gen: %2.3f\n', avg_inh_gen);
-    fprintf('\t           Average gen: %2.3f\n', avg_gen);
+    fprintf('\t      Average exc. gen: %2.4f\n', avg_exc_gen);
+    fprintf('\t      Average inh. gen: %2.4f\n', avg_inh_gen);
+    fprintf('\t           Average gen: %2.4f\n', avg_gen);
     fprintf('\n');
-    fprintf('\t      Average exc. gin: %2.3f\n', avg_exc_gin);
-    fprintf('\t      Average inh. gin: %2.3f\n', avg_inh_gin);
-    fprintf('\t           Average gin: %2.3f\n', avg_gin);
+    fprintf('\t      Average exc. gin: %2.4f\n', avg_exc_gin);
+    fprintf('\t      Average inh. gin: %2.4f\n', avg_inh_gin);
+    fprintf('\t           Average gin: %2.4f\n', avg_gin);
 end
 
 %% Plot sample
